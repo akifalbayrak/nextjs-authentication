@@ -3,7 +3,7 @@
 import { createAuthSession } from "@/lib/auth";
 import { hashUserPassword } from "@/lib/hash";
 import { createUser } from "@/lib/user";
-import { cookies } from "next/headers";
+
 import { redirect } from "next/navigation";
 
 export async function signUp(prevState, formData) {
@@ -36,46 +36,4 @@ export async function signUp(prevState, formData) {
         }
         throw error;
     }
-}
-
-export async function verifyAuth() {
-    const sessionCookie = cookies().get(lucia.sessionCookieName);
-
-    if (!sessionCookie) {
-        return {
-            user: null,
-            session: null,
-        };
-    }
-    const sessionId = sessionCookie.value;
-
-    if (!sessionId) {
-        return {
-            user: null,
-            session: null,
-        };
-    }
-
-    const result = await lucia.validateSession(sessionId);
-
-    try {
-        if (result.session && result.session.fresh) {
-            const sessionCookie = lucia.createSessionCookie(result.session.id);
-            cookies.set(
-                sessionCookie.name,
-                sessionCookie.value,
-                sessionCookie.attributes
-            );
-        }
-        if (!result.session) {
-            const sessionCookie = lucia.createBlankSessionCookie();
-            cookies.set(
-                sessionCookie.name,
-                sessionCookie.value,
-                sessionCookie.attributes
-            );
-        }
-    } catch (error) {}
-
-    return result;
 }
